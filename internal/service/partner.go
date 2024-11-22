@@ -12,6 +12,14 @@ type PartnerService struct {
 	sliceContacts  *handlers.ContactHandler
 }
 
+type PartnerInterface interface {
+	Create(ctx context.Context, partner *domain.Partner) error
+	Update(ctx context.Context, partner *domain.Partner) error
+	Delete(ctx context.Context, partner *domain.Partner) error
+	GetAll(ctx context.Context) (*[]domain.Partner, error)
+	GetByID(ctx context.Context, id int64) (*domain.Partner, error)
+}
+
 func NewPartnerService(partnerHandler *handlers.PartnerHandler, sliceContacts *handlers.ContactHandler) *PartnerService {
 	return &PartnerService{partnerHandler: partnerHandler, sliceContacts: sliceContacts}
 }

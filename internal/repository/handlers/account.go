@@ -11,6 +11,16 @@ type AccountHandler struct {
 	db *gorm.DB
 }
 
+type AccountHandlerInterface interface {
+	Create(ctx context.Context, account *domain.RegisterAccount) error
+	Update(ctx context.Context, account *domain.Account) error
+	Delete(ctx context.Context, account *domain.Account) error
+	GetAll(ctx context.Context) (*[]domain.Account, error)
+	GetByID(ctx context.Context, id int64) (*domain.Account, error)
+	GetByEmail(ctx context.Context, email string) (*domain.Account, error)
+	LoginAccount(ctx context.Context, account *domain.Account) error
+}
+
 func NewAccountHandler(db *gorm.DB) *AccountHandler {
 	return &AccountHandler{db: db}
 }
@@ -52,4 +62,8 @@ func (h *AccountHandler) GetByEmail(ctx context.Context, email string) (*domain.
 		return nil, err
 	}
 	return &account, nil
+}
+
+func (h *AccountHandler) LoginAccount(ctx context.Context, account *domain.Account) error {
+	return h.db.Save(&account).Error
 }
