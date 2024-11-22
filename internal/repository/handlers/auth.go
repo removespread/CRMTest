@@ -8,8 +8,8 @@ import (
 )
 
 type AuthHandlerInterface interface {
-	Register(ctx context.Context, account *domain.RegisterAccount) error
-	Login(ctx context.Context, account *domain.AccountLoginWithEmail) error
+	Register(w http.ResponseWriter, r *http.Request) (int, error)
+	Login(w http.ResponseWriter, r *http.Request) (int, error)
 }
 
 type AuthHandler struct {
