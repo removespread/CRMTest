@@ -3,8 +3,8 @@ package handlers
 import (
 	"context"
 	"crm/internal/domain"
-
-	"golang.org/x/crypto/bcrypt"
+	"encoding/json"
+	"net/http"
 )
 
 type AuthHandlerInterface interface {
@@ -20,33 +20,41 @@ func NewAuthHandler(accountHandler *AccountHandler) *AuthHandler {
 	return &AuthHandler{accountHandler: accountHandler}
 }
 
-func (h *AuthHandler) Register(ctx context.Context, account *domain.RegisterAccount) error {
-	account = &domain.RegisterAccount{
-		Email:    account.Email,
-		Password: account.Password,
+func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) (int, error) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return http.StatusMethodNotAllowed, nil
 	}
 
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(account.Password), bcrypt.DefaultCost)
+	accountRegister := &domain.RegisterAccount{}
+	err := json.NewDecoder(r.Body).Decode(&accountRegister)
 	if err != nil {
-		return err
+		http.Error(w, "Failed to decode request body", http.StatusBadRequest)
+		return http.StatusBadRequest, nil
 	}
 
-	account.Password = string(passwordHash)
+	err = h.accountHandler.Create(context.Background(), accountRegister)
+	if err != nil {
+		http.Error(w, "Failed to create account", http.StatusInternalServerError)
+		return http.StatusInternalServerError, nil
+	}
 
-	return h.accountHandler.Create(ctx, account)
+	return http.StatusOK, nil
 
 }
 
-func (h *AuthHandler) Login(ctx context.Context, account *domain.AccountLoginWithEmail) error {
-	findAccount, err := h.accountHandler.GetByEmail(ctx, account.Email)
-	if err != nil {
-		return err
+func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) (int, error) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return http.StatusMethodNotAllowed, nil
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(findAccount.Password), []byte(account.Password))
+	accountLogin := &domain.AccountLoginWithEmail{}
+	err := json.NewDecoder(r.Body).Decode(&accountLogin)
 	if err != nil {
-		return err
+		http.Error(w, "Failed to decode request body", http.StatusBadRequest)
+		return http.StatusBadRequest, nil
 	}
 
-	return h.accountHandler.LoginAccount(ctx, findAccount)
+	return http.StatusOK, nil
 }
