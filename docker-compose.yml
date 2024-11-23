@@ -1,0 +1,13 @@
+services:
+  crm:
+    image: alpine:latest
+    container_name: crm
+    hostname: crm-removespread
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=crm
+      - TZ: Europe/Moscow
+    ports:
+      - 5432:5432
