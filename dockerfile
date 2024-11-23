@@ -1,7 +1,10 @@
 FROM golang:1.23.2-alpine
 LABEL maintainer="Viktor Sernyaev <removespread@internet.ru>"
-COPY . /app
+COPY go.mod go.sum ./
 WORKDIR /app
-RUN go mod tidy
+COPY . .
+RUN go build -o app ./cmd/main.go
 EXPOSE 8080
-CMD ["go", "run", "main.go"]
+COPY ./builder/entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["./entrypoint.sh"]
+CMD ["./app"]
