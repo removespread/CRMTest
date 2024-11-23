@@ -8,6 +8,6 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=crm
-      - TZ: Europe/Moscow
+      - TZ=Europe/Moscow
     ports:
       - 5432:5432
