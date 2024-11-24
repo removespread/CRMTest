@@ -1,0 +1,15 @@
+database:
+  host: 127.0.0.1
+  port: 5432
+  user: postgres
+  password: postgres
+  db_name: postgres
+  dsn: postgres://postgres:postgres@127.0.0.1:5432/postgres?sslmode=disable
+
+jwt:
+  secret_key: secret
+  expiration: 24h
+
+server:
+  host: 0.0.0.0
+  port: 8080
