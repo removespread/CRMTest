@@ -1,6 +1,10 @@
 package configs
 
-import "github.com/spf13/viper"
+import (
+	"fmt"
+
+	"github.com/spf13/viper"
+)
 
 type Config struct {
 	ServerConfig struct {
@@ -8,9 +12,12 @@ type Config struct {
 		Port int    `yaml:"port"`
 	} `yaml:"server"`
 	DatabaseConfig struct {
-		Host string `yaml:"host"`
-		Port int    `yaml:"port"`
-		User string `yaml:"user"`
+		Host     string `yaml:"host"`
+		Port     int    `yaml:"port"`
+		User     string `yaml:"user"`
+		Password string `yaml:"password"`
+		DBName   string `yaml:"db_name"`
+		Dsn      string `yaml:"dsn"`
 	} `yaml:"database"`
 	JWTConfig struct {
 		SecretKey  string `yaml:"secret_key"`
@@ -33,4 +40,8 @@ func NewConfig() (*Config, error) {
 	}
 
 	return &config, nil
+}
+
+func (c *Config) GetDatabaseDsn() string {
+	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8&parseTime=True&loc=Asia%%2FShanghai", c.DatabaseConfig.User, c.DatabaseConfig.Password, c.DatabaseConfig.Host, c.DatabaseConfig.Port, c.DatabaseConfig.DBName)
 }
