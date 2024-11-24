@@ -1,9 +1,9 @@
 package configs
 
 import (
-	"fmt"
-
 	"github.com/spf13/viper"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 type Config struct {
@@ -42,6 +42,11 @@ func NewConfig() (*Config, error) {
 	return &config, nil
 }
 
-func (c *Config) GetDatabaseDsn() string {
-	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8&parseTime=True&loc=Asia%%2FShanghai", c.DatabaseConfig.User, c.DatabaseConfig.Password, c.DatabaseConfig.Host, c.DatabaseConfig.Port, c.DatabaseConfig.DBName)
+func (c *Config) GetDatabaseDsn() (*gorm.DB, error) {
+	db, err := gorm.Open(postgres.Open(c.DatabaseConfig.Dsn), &gorm.Config{})
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
 }
