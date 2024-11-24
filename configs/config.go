@@ -3,27 +3,19 @@ package configs
 import "github.com/spf13/viper"
 
 type Config struct {
-	Server   ServerConfig
-	Database DatabaseConfig
-	JWT      JWTConfig
-}
-
-type ServerConfig struct {
-	Host string `yaml:"host"`
-	Port int    `yaml:"port"`
-}
-
-type DatabaseConfig struct {
-	Host     string `yaml:"host"`
-	Port     int    `yaml:"port"`
-	User     string `yaml:"user"`
-	Password string `yaml:"password"`
-	DBName   string `yaml:"db_name"`
-}
-
-type JWTConfig struct {
-	SecretKey  string `yaml:"secret_key"`
-	Expiration int64  `yaml:"expiration"`
+	ServerConfig struct {
+		Host string `yaml:"host"`
+		Port int    `yaml:"port"`
+	} `yaml:"server"`
+	DatabaseConfig struct {
+		Host string `yaml:"host"`
+		Port int    `yaml:"port"`
+		User string `yaml:"user"`
+	} `yaml:"database"`
+	JWTConfig struct {
+		SecretKey  string `yaml:"secret_key"`
+		Expiration int64  `yaml:"expiration"`
+	} `yaml:"jwt"`
 }
 
 func NewConfig() (*Config, error) {
