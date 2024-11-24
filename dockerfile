@@ -1,11 +1,9 @@
-FROM golang:1.23.2-alpine
+FROM golang:1.23.2-alpine AS builder
 LABEL maintainer="Viktor Sernyaev <removespread@internet.ru>"
+WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
-WORKDIR /app
 COPY . .
-RUN go build -o app ./cmd/main.go 
+RUN CGO_ENABLED=0 GOOS=linux go build -o app ./cmd/main.go
 EXPOSE 8080
-COPY ./builder/entrypoint.sh /entrypoint.sh
-ENTRYPOINT ["./entrypoint.sh"]
 CMD ["./app"]
