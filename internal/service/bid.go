@@ -4,8 +4,9 @@ import (
 	"context"
 	"crm/internal/domain"
 	"crm/internal/repository/handlers"
-	"errors"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 type BidInterface interface {
@@ -18,21 +19,22 @@ type BidInterface interface {
 
 type BidService struct {
 	bidHandler handlers.BidHandler
+	logger     *zap.SugaredLogger
 }
 
-func NewBidService(bidHandler handlers.BidHandler) *BidService {
-	return &BidService{bidHandler: bidHandler}
+func NewBidService(bidHandler handlers.BidHandler, logger *zap.SugaredLogger) *BidService {
+	return &BidService{bidHandler: bidHandler, logger: logger}
 }
 
 func (s *BidService) Create(ctx context.Context, bid *domain.Bid) error {
 	bid.CreatedAt = time.Now()
 
 	if bid.Amount <= 0 {
-		return errors.New("amount must be greater than 0")
+		s.logger.Errorf("Amount must be greater than 0")
 	}
 
 	if bid.Description == "" {
-		return errors.New("description is required")
+		s.logger.Errorf("Description is required")
 	}
 
 	bid = &domain.Bid{
@@ -47,11 +49,11 @@ func (s *BidService) Create(ctx context.Context, bid *domain.Bid) error {
 func (s *BidService) Update(ctx context.Context, bid *domain.Bid) error {
 	findBid, err := s.bidHandler.GetByID(ctx, bid.ID)
 	if err != nil {
-		return err
+		s.logger.Errorf("Error getting bid by id: %v", err)
 	}
 
 	if bid.Amount <= 0 || bid.Description == "" {
-		return errors.New("amount must be greater than 0 and description is required")
+		s.logger.Errorf("Amount must be greater than 0 and description is required")
 	}
 
 	bid = &domain.Bid{
@@ -66,7 +68,7 @@ func (s *BidService) Update(ctx context.Context, bid *domain.Bid) error {
 func (s *BidService) Delete(ctx context.Context, bid *domain.Bid) error {
 	findBid, err := s.bidHandler.GetByID(ctx, bid.ID)
 	if err != nil {
-		return err
+		s.logger.Errorf("Error getting bid by id: %v", err)
 	}
 
 	return s.bidHandler.Delete(ctx, findBid)
@@ -75,7 +77,7 @@ func (s *BidService) Delete(ctx context.Context, bid *domain.Bid) error {
 func (s *BidService) GetAll(ctx context.Context) (*[]domain.Bid, error) {
 	findBids, err := s.bidHandler.GetAll(ctx)
 	if err != nil {
-		return nil, err
+		s.logger.Errorf("Error getting all bids: %v", err)
 	}
 
 	return findBids, nil
@@ -84,7 +86,7 @@ func (s *BidService) GetAll(ctx context.Context) (*[]domain.Bid, error) {
 func (s *BidService) GetByID(ctx context.Context, id int64) (*domain.Bid, error) {
 	findBid, err := s.bidHandler.GetByID(ctx, id)
 	if err != nil {
-		return nil, err
+		s.logger.Errorf("Error getting bid by id: %v", err)
 	}
 
 	return findBid, nil

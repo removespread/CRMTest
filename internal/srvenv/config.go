@@ -1,7 +1,8 @@
-package configs
+package srvenv
 
 import (
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -25,27 +26,28 @@ type Config struct {
 	} `yaml:"jwt"`
 }
 
-func NewConfig() (*Config, error) {
+func NewConfig(logger *zap.SugaredLogger) (*Config, error) {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("configs")
 
 	if err := viper.ReadInConfig(); err != nil {
-		return nil, err
+		logger.Errorf("Error reading config file: %v", err)
 	}
 
 	var config Config
 	if err := viper.Unmarshal(&config); err != nil {
-		return nil, err
+		logger.Errorf("Error unmarshalling config: %v", err)
+
 	}
 
 	return &config, nil
 }
 
-func (c *Config) GetDatabaseDsn() (*gorm.DB, error) {
+func (c *Config) GetDatabaseDsn(logger *zap.SugaredLogger) (*gorm.DB, error) {
 	db, err := gorm.Open(postgres.Open(c.DatabaseConfig.Dsn), &gorm.Config{})
 	if err != nil {
-		return nil, err
+		logger.Errorf("Error opening database: %v", err)
 	}
 
 	return db, nil
