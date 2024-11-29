@@ -1,14 +1,16 @@
-package handlers
+package postgres
 
 import (
 	"context"
 	"crm/internal/domain"
 
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 type AccountHandler struct {
-	db *gorm.DB
+	db     *gorm.DB
+	logger *zap.SugaredLogger
 }
 
 type AccountHandlerInterface interface {
@@ -21,8 +23,8 @@ type AccountHandlerInterface interface {
 	LoginAccount(ctx context.Context, account *domain.Account) error
 }
 
-func NewAccountHandler(db *gorm.DB) *AccountHandler {
-	return &AccountHandler{db: db}
+func NewAccountHandler(db *gorm.DB, logger *zap.SugaredLogger) *AccountHandler {
+	return &AccountHandler{db: db, logger: logger}
 }
 
 func (h *AccountHandler) Create(ctx context.Context, account *domain.RegisterAccount) error {
@@ -41,7 +43,7 @@ func (h *AccountHandler) GetAll(ctx context.Context) (*[]domain.Account, error) 
 	var accounts []domain.Account
 	err := h.db.Find(&accounts).Error
 	if err != nil {
-		return nil, err
+		h.logger.Errorf("Error getting all accounts: %v", err)
 	}
 	return &accounts, nil
 }
@@ -50,7 +52,7 @@ func (h *AccountHandler) GetByID(ctx context.Context, id int64) (*domain.Account
 	var account domain.Account
 	err := h.db.First(&account, id).Error
 	if err != nil {
-		return nil, err
+		h.logger.Errorf("Error getting account by id: %v", err)
 	}
 	return &account, nil
 }
@@ -59,7 +61,7 @@ func (h *AccountHandler) GetByEmail(ctx context.Context, email string) (*domain.
 	var account domain.Account
 	err := h.db.Where("email = ?", email).First(&account).Error
 	if err != nil {
-		return nil, err
+		h.logger.Errorf("Error getting account by email: %v", err)
 	}
 	return &account, nil
 }

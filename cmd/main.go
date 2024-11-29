@@ -2,7 +2,8 @@ package main
 
 import (
 	"context"
-	"crm/internal/repository/handlers"
+	"crm/internal/middleware"
+	"crm/internal/repository/postgres"
 	"crm/internal/service"
 	"crm/internal/srvenv"
 	"log"
@@ -22,12 +23,13 @@ func main() {
 		}),
 		fx.Provide(
 			srvenv.NewHTTPServer,
-			handlers.NewAccountHandler,
-			handlers.NewContactHandler,
-			handlers.NewAuthHandler,
-			handlers.NewBidHandler,
-			handlers.NewPartnerHandler,
+			postgres.NewAccountHandler,
+			postgres.NewContactHandler,
+			middleware.NewAuthHandler,
+			postgres.NewBidHandler,
+			postgres.NewPartnerHandler,
 			srvenv.NewLogger,
+			srvenv.NewConfig,
 			service.NewAccountService,
 			service.NewContactService,
 			service.NewBidService,

@@ -1,8 +1,9 @@
-package handlers
+package middleware
 
 import (
 	"context"
 	"crm/internal/domain"
+	"crm/internal/repository/postgres"
 	"encoding/json"
 	"net/http"
 )
@@ -13,10 +14,10 @@ type AuthHandlerInterface interface {
 }
 
 type AuthHandler struct {
-	accountHandler *AccountHandler
+	accountHandler postgres.AccountHandler
 }
 
-func NewAuthHandler(accountHandler *AccountHandler) *AuthHandler {
+func NewAuthHandler(accountHandler postgres.AccountHandler) *AuthHandler {
 	return &AuthHandler{accountHandler: accountHandler}
 }
 
