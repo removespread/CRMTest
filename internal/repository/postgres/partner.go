@@ -1,4 +1,4 @@
-package handlers
+package postgres
 
 import (
 	"context"

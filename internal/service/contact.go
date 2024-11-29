@@ -3,12 +3,14 @@ package service
 import (
 	"context"
 	"crm/internal/domain"
-	"crm/internal/repository/handlers"
-	"errors"
+	"crm/internal/repository/postgres"
+
+	"go.uber.org/zap"
 )
 
 type ContactService struct {
-	contactHandler handlers.ContactHandler
+	contactHandler postgres.ContactHandler
+	logger         *zap.SugaredLogger
 }
 
 type ContactServiceInterface interface {
@@ -17,17 +19,17 @@ type ContactServiceInterface interface {
 	Delete(ctx context.Context, contact *domain.Contact) error
 }
 
-func NewContactService(contactHandler handlers.ContactHandler) *ContactService {
-	return &ContactService{contactHandler: contactHandler}
+func NewContactService(contactHandler postgres.ContactHandler, logger *zap.SugaredLogger) *ContactService {
+	return &ContactService{contactHandler: contactHandler, logger: logger}
 }
 
-func (s *ContactService) Create(ctx context.Context, contact *domain.Contact) error {
+func (s *ContactService) Create(ctx context.Context, contact *domain.Contact, logger *zap.SugaredLogger) error {
 	if contact.Name == "" {
-		return errors.New("name is required")
+		s.logger.Errorf("Name is required")
 	}
 
 	if contact.Phone == "" {
-		return errors.New("phone is required")
+		s.logger.Errorf("Phone is required")
 	}
 
 	contact = &domain.Contact{
@@ -38,18 +40,18 @@ func (s *ContactService) Create(ctx context.Context, contact *domain.Contact) er
 	return s.contactHandler.Create(ctx, contact)
 }
 
-func (s *ContactService) Update(ctx context.Context, contact *domain.Contact) error {
+func (s *ContactService) Update(ctx context.Context, contact *domain.Contact, logger *zap.SugaredLogger) error {
 	findContact, err := s.contactHandler.GetByID(ctx, contact.ID)
 	if err != nil {
-		return err
+		s.logger.Errorf("Error getting contact by id: %v", err)
 	}
 
 	if contact.Name == "" {
-		return errors.New("name is required")
+		s.logger.Errorf("Name is required")
 	}
 
 	if contact.Phone == "" {
-		return errors.New("phone is required")
+		s.logger.Errorf("Phone is required")
 	}
 
 	contact = &domain.Contact{
@@ -63,20 +65,20 @@ func (s *ContactService) Update(ctx context.Context, contact *domain.Contact) er
 func (s *ContactService) Delete(ctx context.Context, contact *domain.Contact) error {
 	findContact, err := s.contactHandler.GetByID(ctx, contact.ID)
 	if err != nil {
-		return err
+		s.logger.Errorf("Error getting contact by id: %v", err)
 	}
 
 	return s.contactHandler.Delete(ctx, findContact)
 }
 
-func (s *ContactService) GetAll(ctx context.Context) (*[]domain.Contact, error) {
+func (s *ContactService) GetAll(ctx context.Context, logger *zap.SugaredLogger) (*[]domain.Contact, error) {
 	return s.contactHandler.GetAll(ctx)
 }
 
 func (s *ContactService) GetByID(ctx context.Context, id int64) (*domain.Contact, error) {
 	contact, err := s.contactHandler.GetByID(ctx, id)
 	if err != nil {
-		return nil, err
+		s.logger.Errorf("Error getting contact by id: %v", err)
 	}
 
 	return contact, nil

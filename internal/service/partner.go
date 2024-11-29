@@ -3,13 +3,15 @@ package service
 import (
 	"context"
 	"crm/internal/domain"
-	"crm/internal/repository/handlers"
-	"errors"
+	"crm/internal/repository/postgres"
+
+	"go.uber.org/zap"
 )
 
 type PartnerService struct {
-	partnerHandler *handlers.PartnerHandler
-	sliceContacts  *handlers.ContactHandler
+	partnerHandler postgres.PartnerHandler
+	sliceContacts  postgres.ContactHandler
+	logger         *zap.SugaredLogger
 }
 
 type PartnerInterface interface {
@@ -20,17 +22,17 @@ type PartnerInterface interface {
 	GetByID(ctx context.Context, id int64) (*domain.Partner, error)
 }
 
-func NewPartnerService(partnerHandler *handlers.PartnerHandler, sliceContacts *handlers.ContactHandler) *PartnerService {
-	return &PartnerService{partnerHandler: partnerHandler, sliceContacts: sliceContacts}
+func NewPartnerService(partnerHandler postgres.PartnerHandler, sliceContacts postgres.ContactHandler, logger *zap.SugaredLogger) *PartnerService {
+	return &PartnerService{partnerHandler: partnerHandler, sliceContacts: sliceContacts, logger: logger}
 }
 
 func (s *PartnerService) Create(ctx context.Context, partner *domain.Partner) error {
 	if partner.Name == "" {
-		return errors.New("name is required")
+		s.logger.Errorf("Name is required")
 	}
 
 	if len(partner.Contacts) == 0 {
-		return errors.New("contacts are required")
+		s.logger.Errorf("Contacts are required")
 	}
 
 	var sliceContacts []domain.Contact
@@ -38,7 +40,7 @@ func (s *PartnerService) Create(ctx context.Context, partner *domain.Partner) er
 	for _, contactID := range partner.Contacts {
 		contact, err := s.sliceContacts.GetByID(ctx, contactID.ID)
 		if err != nil {
-			return err
+			s.logger.Errorf("Error getting contact by id: %v", err)
 		}
 
 		sliceContacts = append(sliceContacts, *contact)
@@ -60,14 +62,14 @@ func (s *PartnerService) Update(ctx context.Context, partner *domain.Partner) er
 	}
 
 	if partner.Name == "" {
-		return errors.New("name is required")
+		s.logger.Errorf("Name is required")
 	}
 
 	var sliceContacts []domain.Contact
 	for _, contactID := range partner.Contacts {
 		contact, err := s.sliceContacts.GetByID(ctx, contactID.ID)
 		if err != nil {
-			return err
+			s.logger.Errorf("Error getting contact by id: %v", err)
 		}
 
 		sliceContacts = append(sliceContacts, *contact)
@@ -80,7 +82,7 @@ func (s *PartnerService) Update(ctx context.Context, partner *domain.Partner) er
 	}
 
 	if len(partner.Contacts) == 0 {
-		return errors.New("contacts are required")
+		s.logger.Errorf("Contacts are required")
 	}
 
 	return s.partnerHandler.Update(ctx, partner)
