@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"crm/internal/domain"
-	"crm/internal/repository/handlers"
+	"crm/internal/repository/postgres"
 
 	"github.com/golang-jwt/jwt"
 	"go.uber.org/zap"
@@ -19,19 +19,18 @@ type AccountInterface interface {
 }
 
 type AccountService struct {
-	accountRepo handlers.AccountHandler
+	accountRepo postgres.AccountHandler
 	jwtSecret   string
 	logger      *zap.SugaredLogger
 }
 
-func NewAccountService(accountRepo handlers.AccountHandler, jwtSecret string, logger *zap.SugaredLogger) *AccountService {
+func NewAccountService(accountRepo postgres.AccountHandler, jwtSecret string, logger *zap.SugaredLogger) *AccountService {
 	return &AccountService{accountRepo: accountRepo, jwtSecret: jwtSecret, logger: logger}
 }
 func (s *AccountService) RegisterAccount(ctx context.Context, account *domain.RegisterAccount, logger *zap.SugaredLogger) error {
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(account.Password), bcrypt.DefaultCost)
 	if err != nil {
-		logger.Errorf("Error generating password hash: %v", err)
-		return err
+		s.logger.Errorf("Error generating password hash: %v", err)
 	}
 
 	account = &domain.RegisterAccount{
@@ -46,7 +45,6 @@ func (s *AccountService) LoginAccount(ctx context.Context, account *domain.Accou
 	findAccount, err := s.accountRepo.GetByEmail(ctx, account.Email)
 	if err != nil {
 		s.logger.Errorf("Error getting account by email: %v", err)
-		return err
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(findAccount.Password), []byte(account.Password))

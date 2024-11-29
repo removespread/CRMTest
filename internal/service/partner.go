@@ -3,14 +3,14 @@ package service
 import (
 	"context"
 	"crm/internal/domain"
-	"crm/internal/repository/handlers"
+	"crm/internal/repository/postgres"
 
 	"go.uber.org/zap"
 )
 
 type PartnerService struct {
-	partnerHandler *handlers.PartnerHandler
-	sliceContacts  *handlers.ContactHandler
+	partnerHandler postgres.PartnerHandler
+	sliceContacts  postgres.ContactHandler
 	logger         *zap.SugaredLogger
 }
 
@@ -22,7 +22,7 @@ type PartnerInterface interface {
 	GetByID(ctx context.Context, id int64) (*domain.Partner, error)
 }
 
-func NewPartnerService(partnerHandler *handlers.PartnerHandler, sliceContacts *handlers.ContactHandler, logger *zap.SugaredLogger) *PartnerService {
+func NewPartnerService(partnerHandler postgres.PartnerHandler, sliceContacts postgres.ContactHandler, logger *zap.SugaredLogger) *PartnerService {
 	return &PartnerService{partnerHandler: partnerHandler, sliceContacts: sliceContacts, logger: logger}
 }
 

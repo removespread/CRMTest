@@ -3,13 +3,13 @@ package service
 import (
 	"context"
 	"crm/internal/domain"
-	"crm/internal/repository/handlers"
+	"crm/internal/repository/postgres"
 
 	"go.uber.org/zap"
 )
 
 type ContactService struct {
-	contactHandler handlers.ContactHandler
+	contactHandler postgres.ContactHandler
 	logger         *zap.SugaredLogger
 }
 
@@ -19,7 +19,7 @@ type ContactServiceInterface interface {
 	Delete(ctx context.Context, contact *domain.Contact) error
 }
 
-func NewContactService(contactHandler handlers.ContactHandler, logger *zap.SugaredLogger) *ContactService {
+func NewContactService(contactHandler postgres.ContactHandler, logger *zap.SugaredLogger) *ContactService {
 	return &ContactService{contactHandler: contactHandler, logger: logger}
 }
 

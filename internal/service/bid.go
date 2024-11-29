@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"crm/internal/domain"
-	"crm/internal/repository/handlers"
+	"crm/internal/repository/postgres"
 	"time"
 
 	"go.uber.org/zap"
@@ -18,11 +18,11 @@ type BidInterface interface {
 }
 
 type BidService struct {
-	bidHandler handlers.BidHandler
+	bidHandler postgres.BidHandler
 	logger     *zap.SugaredLogger
 }
 
-func NewBidService(bidHandler handlers.BidHandler, logger *zap.SugaredLogger) *BidService {
+func NewBidService(bidHandler postgres.BidHandler, logger *zap.SugaredLogger) *BidService {
 	return &BidService{bidHandler: bidHandler, logger: logger}
 }
 
